@@ -1,0 +1,2 @@
+# home
+Smart Home Setup
