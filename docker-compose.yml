@@ -25,9 +25,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - /ssd/docker/traefik/traefik.yml:/traefik.yml
-      - /ssd/docker/traefik/acme.json:/acme.json
-      - /ssd/docker/traefik/config.yml:/config.yml
+      - ${VOLUME_PATH}/traefik/traefik.yml:/traefik.yml
+      - ${VOLUME_PATH}/traefik/acme.json:/acme.json
+      - ${VOLUME_PATH}/traefik/config.yml:/config.yml
     networks:
       - proxy
     ports: # We want træfik to handle all of the HTTP and HTTPS stuff, it's a reverse proxy after all.
@@ -67,7 +67,7 @@ services:
     restart: always
     user: 1001:1001
     volumes:
-      - /ssd/docker/node-red:/data
+      - ${VOLUME_PATH}/node-red:/data
     networks:
       - proxy
     environment:
@@ -90,6 +90,9 @@ services:
 
   adguard-home:
     image: adguard/adguardhome
+    volumes:
+      - ${VOLUME_PATH}adguard/work:/opt/adguardhome/work
+      - ${VOLUME_PATH}/adguard/conf:/opt/adguardhome/conf
     networks:
       - proxy
     ports:
@@ -114,7 +117,7 @@ services:
   wireguard:
     image: cmulk/wireguard-docker:buster # https://github.com/cmulk/wireguard-docker
     volumes:
-      - data:/etc/wireguard
+      - ${VOLUME_PATH}/wireguard:/etc/wireguard
     networks:
       - net
     ports:
