@@ -38,19 +38,19 @@ services:
       - CLOUDFLARE_API_KEY=${CLOUDFLARE_APIKEY}
     labels:
       - traefik.enable=true
-      - traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https
-      # - traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=XXX
-      # HTTP
-      - traefik.http.routers.traefik.entrypoints=http
+      # Global Middlewares
+      - traefik.http.middlewares.redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.0.1/24
+      # Redirect HTTP to HTTPS
+      - traefik.http.routers.redirect.entrypoints=http
+      - traefik.http.routers.redirect.rule=HostRegexp(`{any:.*}`)
+      - traefik.http.routers.redirect.middlewares=redirect
+      # Enable Dashboard
+      - traefik.http.routers.traefik.entrypoints=https
       - traefik.http.routers.traefik.rule=Host(`traefik.local`)
-      - traefik.http.routers.traefik.middlewares=traefik-redirect,traefik-whitelist
-      # HTTPS
-      - traefik.http.routers.traefik-secure.entrypoints=https
-      - traefik.http.routers.traefik-secure.rule=Host(`traefik.local`)
-      - traefik.http.routers.traefik-secure.tls=true
-      - traefik.http.routers.traefik-secure.tls.certResolver=http
-      - traefik.http.routers.traefik-secure.service=api@internal
-      - traefik.http.routers.traefik-secure.middlewares=traefik-whitelist
+      - traefik.http.routers.traefik.tls.certresolver=http
+      - traefik.http.routers.traefik.middlewares=whitelist
+      - traefik.http.routers.traefik.service=api@internal
 
   home-assistant:
     image: homeassistant/raspberrypi4-homeassistant:stable
