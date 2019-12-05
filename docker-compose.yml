@@ -56,12 +56,11 @@ services:
     image: homeassistant/raspberrypi4-homeassistant:stable
     restart: always
     volumes:
-      - /ssd/docker/home-assistant:/config
+      - ${VOLUME_PATH}/home-assistant:/config
       - /etc/localtime:/etc/localtime:ro
     network_mode: host # We need some træfik stuff for this to work properly
     environment:
       - TZ=Europe/Copenhagen
-
 
   node-red:
     image: nodered/node-red:latest
