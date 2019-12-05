@@ -47,7 +47,7 @@ services:
       - traefik.http.routers.redirect.middlewares=redirect
       # Enable Dashboard
       - traefik.http.routers.traefik.entrypoints=https
-      - traefik.http.routers.traefik.rule=Host(`traefik.local`)
+      - traefik.http.routers.traefik.rule=Host(`traefik.akj.io`)
       - traefik.http.routers.traefik.tls.certresolver=http
       - traefik.http.routers.traefik.middlewares=whitelist
       - traefik.http.routers.traefik.service=api@internal
@@ -75,7 +75,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.node-red.entrypoints=https
-      - traefik.http.routers.node-red.rule=Host(`nodered.local`)
+      - traefik.http.routers.node-red.rule=Host(`nodered.akj.io`)
       - traefik.http.routers.node-red.tls.certresolver=http
       - traefik.http.routers.node-red.middlewares=whitelist
       - traefik.http.services.node-red.loadbalancer.server.port=1880
@@ -97,7 +97,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.adguard.entrypoints=https
-      - traefik.http.routers.adguard.rule=Host(`adguard.local`)
+      - traefik.http.routers.adguard.rule=Host(`adguard.akj.io`)
       - traefik.http.routers.adguard.tls.certresolver=http
       - traefik.http.routers.adguard.middlewares=whitelist
 
