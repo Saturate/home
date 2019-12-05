@@ -40,7 +40,7 @@ services:
       - traefik.enable=true
       # Global Middlewares
       - traefik.http.middlewares.redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24
+      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24 # Only allow local connections
       # Redirect HTTP to HTTPS
       - traefik.http.routers.redirect.entrypoints=http
       - traefik.http.routers.redirect.rule=HostRegexp(`{any:.*}`)
@@ -87,6 +87,7 @@ services:
       - ${VOLUME_PATH}/adguard/conf:/opt/adguardhome/conf
     networks:
       - proxy
+    restart: unless-stopped
     ports:
       - 53:53
       - 67:67
@@ -100,6 +101,7 @@ services:
       - traefik.http.routers.adguard.rule=Host(`adguard.akj.io`)
       - traefik.http.routers.adguard.tls.certresolver=http
       - traefik.http.routers.adguard.middlewares=whitelist
+      - traefik.http.services.adguard.loadbalancer.server.port=3000
 
   wireguard:
     image: cmulk/wireguard-docker:buster # https://github.com/cmulk/wireguard-docker
