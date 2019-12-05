@@ -10,7 +10,7 @@ services:
 
   # Make sure the IP is correct, it's dynamic at home for me.
   cloudflare-ddns:
-    image: oznu/cloudflare-ddns:latest # change 'latest' to 'armhf' or 'aarch64' if running on an arm device
+    image: oznu/cloudflare-ddns:armhf # change 'latest' to 'armhf' or 'aarch64' if running on an arm device
     restart: always
     environment:
       - EMAIL=${CLOUDFLARE_EMAIL}
@@ -81,7 +81,7 @@ services:
       - traefik.http.services.node-red.loadbalancer.server.port=1880
   
   adguard-home:
-    image: adguard/adguardhome
+    image: adguard/adguardhome:armhf-latest
     volumes:
       - ${VOLUME_PATH}adguard/work:/opt/adguardhome/work
       - ${VOLUME_PATH}/adguard/conf:/opt/adguardhome/conf
