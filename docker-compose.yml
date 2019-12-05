@@ -102,7 +102,7 @@ services:
     volumes:
       - ${VOLUME_PATH}/wireguard:/etc/wireguard
     networks:
-      - net
+      - proxy
     ports:
       - 5555:5555/udp
     restart: unless-stopped
