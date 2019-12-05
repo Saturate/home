@@ -34,13 +34,13 @@ services:
       - 80:80
       - 443:443
     environment:
-      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}      # These are used for Let's Encrypt
       - CLOUDFLARE_API_KEY=${CLOUDFLARE_APIKEY}
     labels:
       - traefik.enable=true
       # Global Middlewares
       - traefik.http.middlewares.redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.0.1/24
+      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24
       # Redirect HTTP to HTTPS
       - traefik.http.routers.redirect.entrypoints=http
       - traefik.http.routers.redirect.rule=HostRegexp(`{any:.*}`)
@@ -62,6 +62,7 @@ services:
     environment:
       - TZ=Europe/Copenhagen
 
+
   node-red:
     image: nodered/node-red:latest
     restart: always
@@ -74,20 +75,12 @@ services:
       - TZ=Europe/Copenhagen
     labels:
       - traefik.enable=true
-      - traefik.http.middlewares.node-red-redirect.redirectscheme.scheme=https
-      # - traefik.http.middlewares.node-red-whitelist.ipwhitelist.sourcerange=XXX
-      # HTTP
-      - traefik.http.routers.node-red.entrypoints=http
+      - traefik.http.routers.node-red.entrypoints=https
       - traefik.http.routers.node-red.rule=Host(`nodered.local`)
-      - traefik.http.routers.node-red.middlewares=node-red-redirect,node-red-whitelist
-      # HTTPS
-      - traefik.http.routers.node-red-secure.entrypoints=https
-      - traefik.http.routers.node-red-secure.rule=Host(`nodered.local`)
-      - traefik.http.routers.node-red-secure.tls=true
-      - traefik.http.routers.node-red-secure.tls.certResolver=http
-      - traefik.http.routers.node-red-secure.middlewares=node-red-whitelist
-      - traefik.http.services.node-red-secure.loadbalancer.server.port=1880
-
+      - traefik.http.routers.node-red.tls.certresolver=http
+      - traefik.http.routers.node-red.middlewares=whitelist
+      - traefik.http.services.node-red.loadbalancer.server.port=1880
+  
   adguard-home:
     image: adguard/adguardhome
     volumes:
@@ -100,19 +93,10 @@ services:
       - 53/udp
     labels:
       - traefik.enable=true
-      - traefik.http.middlewares.adguard-redirect.redirectscheme.scheme=https
-      # - traefik.http.middlewares.adguard-whitelist.ipwhitelist.sourcerange=XXX
-      # HTTP
-      - traefik.http.routers.adguard.entrypoints=http
+      - traefik.http.routers.adguard.entrypoints=https
       - traefik.http.routers.adguard.rule=Host(`adguard.local`)
-      - traefik.http.routers.adguard.middlewares=adguard-redirect,adguard-whitelist
-      # HTTPS
-      - traefik.http.routers.adguard-secure.entrypoints=https
-      - traefik.http.routers.adguard-secure.rule=Host(`adguard.local`)
-      - traefik.http.routers.adguard-secure.tls=true
-      - traefik.http.routers.adguard-secure.tls.certResolver=http
-      - traefik.http.routers.adguard-secure.middlewares=adguard-whitelist
-      - traefik.http.services.adguard-secure.loadbalancer.server.port=1880
+      - traefik.http.routers.adguard.tls.certresolver=http
+      - traefik.http.routers.adguard.middlewares=whitelist
 
   wireguard:
     image: cmulk/wireguard-docker:buster # https://github.com/cmulk/wireguard-docker
