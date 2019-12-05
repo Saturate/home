@@ -1,0 +1,129 @@
+# Docker Compose for Home Assistant
+# 
+# Stores all secrets in .env, see this page for information
+# https://docs.docker.com/compose/environment-variables/
+#
+# You need to add them all or this wont work.
+version: '3.7'
+
+services:
+
+  # Make sure the IP is correct, it's dynamic at home for me.
+  cloudflare-ddns:
+    image: oznu/cloudflare-ddns:latest # change 'latest' to 'armhf' or 'aarch64' if running on an arm device
+    restart: always
+    environment:
+      - EMAIL=${CLOUDFLARE_EMAIL}
+      - API_KEY=${CLOUDFLARE_APIKEY}
+      - ZONE=akj.io
+      - SUBDOMAIN=home
+      - PROXIED=false
+
+  traefik:
+    image: traefik:latest
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /ssd/docker/traefik/traefik.yml:/traefik.yml
+      - /ssd/docker/traefik/acme.json:/acme.json
+      - /ssd/docker/traefik/config.yml:/config.yml
+    networks:
+      - proxy
+    ports: # We want træfik to handle all of the HTTP and HTTPS stuff, it's a reverse proxy after all.
+      - 80:80
+      - 443:443
+    environment:
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
+      - CLOUDFLARE_API_KEY=${CLOUDFLARE_APIKEY}
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https
+      # - traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=XXX
+      # HTTP
+      - traefik.http.routers.traefik.entrypoints=http
+      - traefik.http.routers.traefik.rule=Host(`traefik.local`)
+      - traefik.http.routers.traefik.middlewares=traefik-redirect,traefik-whitelist
+      # HTTPS
+      - traefik.http.routers.traefik-secure.entrypoints=https
+      - traefik.http.routers.traefik-secure.rule=Host(`traefik.local`)
+      - traefik.http.routers.traefik-secure.tls=true
+      - traefik.http.routers.traefik-secure.tls.certResolver=http
+      - traefik.http.routers.traefik-secure.service=api@internal
+      - traefik.http.routers.traefik-secure.middlewares=traefik-whitelist
+
+  home-assistant:
+    image: homeassistant/raspberrypi4-homeassistant:stable
+    restart: always
+    volumes:
+      - /ssd/docker/home-assistant:/config
+      - /etc/localtime:/etc/localtime:ro
+    network_mode: host # We need some træfik stuff for this to work properly
+    environment:
+      - TZ=Europe/Copenhagen
+
+  node-red:
+    image: nodered/node-red:latest
+    restart: always
+    user: 1001:1001
+    volumes:
+      - /ssd/docker/node-red:/data
+    networks:
+      - proxy
+    environment:
+      - TZ=Europe/Copenhagen
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.node-red-redirect.redirectscheme.scheme=https
+      # - traefik.http.middlewares.node-red-whitelist.ipwhitelist.sourcerange=XXX
+      # HTTP
+      - traefik.http.routers.node-red.entrypoints=http
+      - traefik.http.routers.node-red.rule=Host(`nodered.local`)
+      - traefik.http.routers.node-red.middlewares=node-red-redirect,node-red-whitelist
+      # HTTPS
+      - traefik.http.routers.node-red-secure.entrypoints=https
+      - traefik.http.routers.node-red-secure.rule=Host(`nodered.local`)
+      - traefik.http.routers.node-red-secure.tls=true
+      - traefik.http.routers.node-red-secure.tls.certResolver=http
+      - traefik.http.routers.node-red-secure.middlewares=node-red-whitelist
+      - traefik.http.services.node-red-secure.loadbalancer.server.port=1880
+
+  adguard-home:
+    image: adguard/adguardhome
+    networks:
+      - proxy
+    ports:
+      - 53/tcp
+      - 53/udp
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.adguard-redirect.redirectscheme.scheme=https
+      # - traefik.http.middlewares.adguard-whitelist.ipwhitelist.sourcerange=XXX
+      # HTTP
+      - traefik.http.routers.adguard.entrypoints=http
+      - traefik.http.routers.adguard.rule=Host(`adguard.local`)
+      - traefik.http.routers.adguard.middlewares=adguard-redirect,adguard-whitelist
+      # HTTPS
+      - traefik.http.routers.adguard-secure.entrypoints=https
+      - traefik.http.routers.adguard-secure.rule=Host(`adguard.local`)
+      - traefik.http.routers.adguard-secure.tls=true
+      - traefik.http.routers.adguard-secure.tls.certResolver=http
+      - traefik.http.routers.adguard-secure.middlewares=adguard-whitelist
+      - traefik.http.services.adguard-secure.loadbalancer.server.port=1880
+
+  wireguard:
+    image: cmulk/wireguard-docker:buster # https://github.com/cmulk/wireguard-docker
+    volumes:
+      - data:/etc/wireguard
+    networks:
+      - net
+    ports:
+      - 5555:5555/udp
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+
+networks:
+  proxy: # Used for Reverse proxy
+    external: true
