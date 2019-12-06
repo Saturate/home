@@ -65,7 +65,7 @@ services:
   node-red:
     image: nodered/node-red:latest
     restart: always
-    user: 1001:1001
+    user: 1000:1000 # User ID for PI user
     volumes:
       - ${VOLUME_PATH}/node-red:/data
     networks:
