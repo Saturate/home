@@ -8,17 +8,7 @@ version: '3.7'
 
 services:
 
-  # Make sure the IP is correct, it's dynamic at home for me.
-  cloudflare-ddns:
-    image: oznu/cloudflare-ddns:armhf # change 'latest' to 'armhf' or 'aarch64' if running on an arm device
-    restart: always
-    environment:
-      - EMAIL=${CLOUDFLARE_EMAIL}
-      - API_KEY=${CLOUDFLARE_APIKEY}
-      - ZONE=akj.io
-      - SUBDOMAIN=home
-      - PROXIED=false
-
+  # Reverse Proxy
   traefik:
     image: traefik:latest
     restart: always
@@ -82,12 +72,12 @@ services:
   
   adguard-home:
     image: adguard/adguardhome:armhf-latest
+    restart: unless-stopped
     volumes:
       - ${VOLUME_PATH}adguard/work:/opt/adguardhome/work
       - ${VOLUME_PATH}/adguard/conf:/opt/adguardhome/conf
     networks:
       - proxy
-    restart: unless-stopped
     ports:
       - 53:53
       - 67:67
@@ -105,16 +95,27 @@ services:
 
   wireguard:
     image: cmulk/wireguard-docker:buster # https://github.com/cmulk/wireguard-docker
+    restart: unless-stopped
     volumes:
       - ${VOLUME_PATH}/wireguard:/etc/wireguard
     networks:
       - proxy
     ports:
       - 5555:5555/udp
-    restart: unless-stopped
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
+
+  # Make sure the IP is correct, it's dynamic at home for me.
+  cloudflare-ddns:
+    image: oznu/cloudflare-ddns:armhf # change 'latest' to 'armhf' or 'aarch64' if running on an arm device
+    restart: always
+    environment:
+      - EMAIL=${CLOUDFLARE_EMAIL}
+      - API_KEY=${CLOUDFLARE_APIKEY}
+      - ZONE=akj.io
+      - SUBDOMAIN=home
+      - PROXIED=false
 
 networks:
   proxy: # Used for Reverse proxy
