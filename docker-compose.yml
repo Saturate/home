@@ -24,7 +24,7 @@ services:
       - 80:80
       - 443:443
     environment:
-      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}      # These are used for Let's Encrypt
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL} # These are used for Let's Encrypt
       - CLOUDFLARE_API_KEY=${CLOUDFLARE_APIKEY}
     labels:
       - traefik.enable=true
@@ -94,17 +94,29 @@ services:
       - traefik.http.services.adguard.loadbalancer.server.port=3000
 
   wireguard:
-    image: cmulk/wireguard-docker:buster # https://github.com/cmulk/wireguard-docker
-    restart: unless-stopped
-    volumes:
-      - ${VOLUME_PATH}/wireguard:/etc/wireguard
-    networks:
-      - proxy
-    ports:
-      - 5555:5555/udp
+    image: linuxserver/wireguard
+    container_name: wireguard
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Copenhagen
+      - SERVERURL=wireguard.akj.io #optional
+      - SERVERPORT=51820 #optional
+      - PEERS=1 #optional
+      - PEERDNS=auto #optional
+      - INTERNAL_SUBNET=10.13.13.0 #optional
+    restart: unless-stopped
+    volumes:
+      - ${VOLUME_PATH}/wireguard/config:/config
+    networks:
+      - proxy
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    ports:
+      - 51820:51820/udp
 
   # Make sure the IP is correct, it's dynamic at home for me.
   cloudflare-ddns:
