@@ -30,7 +30,7 @@ services:
       - traefik.enable=true
       # Global Middlewares
       - traefik.http.middlewares.redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24 # Only allow local connections
+      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24,89.23.232.16 # Only allow local connections 89.23.232.16
       # Redirect HTTP to HTTPS
       - traefik.http.routers.redirect.entrypoints=http
       - traefik.http.routers.redirect.rule=HostRegexp(`{any:.*}`)
@@ -51,6 +51,9 @@ services:
     network_mode: host # We need some træfik stuff for this to work properly
     environment:
       - TZ=Europe/Copenhagen
+    devices:
+      # Z-Wave Stick (ttyACM0)
+      - /dev/zwave:/dev/zwave 
 
   node-red:
     image: nodered/node-red:latest
@@ -104,10 +107,10 @@ services:
       - PGID=1000
       - TZ=Europe/Copenhagen
       - SERVERURL=wireguard.akj.io #optional
-      - SERVERPORT=51820 #optional
-      - PEERS=1 #optional
-      - PEERDNS=auto #optional
-      - INTERNAL_SUBNET=10.13.13.0 #optional
+      - SERVERPORT=51820 #  optio     nal
+      - PEERS=1 # optional
+      - PEERDNS=auto # optional
+      - INTERNAL_SUBNET=10.13.13.0 # optional
     restart: unless-stopped
     volumes:
       - ${VOLUME_PATH}/wireguard/config:/config
