@@ -56,6 +56,7 @@ services:
       - /dev/zwave:/dev/zwave 
 
   node-red:
+    container_name: nodered
     image: nodered/node-red:latest
     restart: always
     user: 1000:1000 # User ID for PI user
@@ -146,6 +147,7 @@ services:
 
   # Make sure the IP is correct, it's dynamic at home for me.
   cloudflare-ddns:
+    container_name: ddns
     image: oznu/cloudflare-ddns:armhf # change 'latest' to 'armhf' or 'aarch64' if running on an arm device
     restart: always
     environment:
