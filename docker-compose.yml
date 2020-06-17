@@ -73,6 +73,29 @@ services:
       - traefik.http.routers.node-red.middlewares=whitelist
       - traefik.http.services.node-red.loadbalancer.server.port=1880
   
+  #MQTT Broker
+  mqtt:
+    container_name: mosquitto
+    image: eclipse-mosquitto:latest
+    restart: unless-stopped
+    networks:
+      - proxy
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - ${VOLUME_PATH}/mqtt/mosquitto/config:/mosquitto/config
+      - ${VOLUME_PATH}/mqtt/mosquitto/data:/mosquitto/data
+      - ${VOLUME_PATH}/mqtt/mosquitto/log:/mosquitto/log
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mqtt.entrypoints=https
+      - traefik.http.routers.mqtt.rule=Host(`mqtt.akj.io`)
+      - traefik.http.routers.mqtt.tls.certresolver=http
+      - traefik.http.routers.mqtt.middlewares=whitelist
+      - traefik.http.services.mqtt.loadbalancer.server.port=1883
+      - traefik.http.services.mqtt.loadbalancer.server.port=9001
+
   adguard-home:
     image: adguard/adguardhome:armhf-latest
     restart: unless-stopped

@@ -12,3 +12,7 @@ Smart Home Setup. Used on Rasberry Pi 4, 4GB.
 1. Create `.env` file
 2. Move the volume folder to the path you want to use. Make sure to change all the configs you want.
 3. ???
+
+## Setup MQTT
+
+# https://www.home-assistant.io/docs/mqtt/broker
