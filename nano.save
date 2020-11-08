@@ -1,0 +1,1 @@
+Executing: /usr/local/bin/ozwdaemon -s /dev/zwave --config-dir /opt/ozw/config --user-dir /opt/ozw/config --mqtt-server mosquitto --mqtt-port 1883 --stop-on-failure --mqtt-instance 1

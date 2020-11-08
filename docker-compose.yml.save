@@ -30,7 +30,7 @@ services:
       - traefik.enable=true
       # Global Middlewares
       - traefik.http.middlewares.redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24,89.23.232.16 # Only allow local connections
+      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24, # Only allow local connections
       # Redirect HTTP to HTTPS
       - traefik.http.routers.redirect.entrypoints=http
       - traefik.http.routers.redirect.rule=HostRegexp(`{any:.*}`)
@@ -39,7 +39,7 @@ services:
       - traefik.http.routers.traefik.entrypoints=https
       - traefik.http.routers.traefik.rule=Host(`traefik.akj.io`)
       - traefik.http.routers.traefik.tls.certresolver=http
-      - traefik.http.routers.traefik.middlewares=whitelist
+#      - traefik.http.routers.traefik.middlewares=whitelist
       - traefik.http.routers.traefik.service=api@internal
 
   home-assistant:
@@ -51,62 +51,6 @@ services:
     network_mode: host # We need some træfik stuff for this to work properly
     environment:
       - TZ=Europe/Copenhagen
-    # devices:
-      # Z-Wave Stick (ttyACM0)
-      # - /dev/zwave:/dev/zwave 
-
-  #MQTT Broker
-  mqtt:
-    container_name: mosquitto
-    image: eclipse-mosquitto:latest
-    restart: unless-stopped
-    networks:
-      - proxy
-    ports:
-      - 1883:1883
-      - 9001:9001
-    volumes:
-      - ${VOLUME_PATH}/mqtt/mosquitto/config:/mosquitto/config
-      - ${VOLUME_PATH}/mqtt/mosquitto/data:/mosquitto/data
-      - ${VOLUME_PATH}/mqtt/mosquitto/log:/mosquitto/log
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.mqtt.entrypoints=https
-      - traefik.http.routers.mqtt.rule=Host(`mqtt.akj.io`)
-      - traefik.http.routers.mqtt.tls.certresolver=http
-      - traefik.http.routers.mqtt.middlewares=whitelist
-      - traefik.http.services.mqtt.loadbalancer.server.port=1883
-      - traefik.http.services.mqtt.loadbalancer.server.port=9001
-
-  # OpenZWave (ozwdaemon)
-  ozwd:
-    image: openzwave/ozwdaemon:latest
-    container_name: "ozwd"
-    networks:
-      - proxy
-    security_opt:
-      - seccomp:unconfined
-    devices:
-      # Z-Wave Stick (ttyACM0)
-      - /dev/zwave:/dev/zwave 
-    volumes:
-      - ${VOLUME_PATH}/ozw:/opt/ozw/config
-    ports:
-      - "1983:1983"
-    environment:
-      MQTT_SERVER: "mosquitto" # Docker Hostname
-      MQTT_USERNAME: ""
-      MQTT_PASSWORD: ""
-      USB_PATH: "/dev/zwave"
-      OZW_NETWORK_KEY: ${ZWAVE_NETWORKKEY}
-    restart: unless-stopped 
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.ozwd.entrypoints=https
-      - traefik.http.routers.ozwd.rule=Host(`home.akj.io`)
-      - traefik.http.routers.ozwd.tls.certresolver=http
-      - traefik.http.routers.ozwd.middlewares=whitelist
-      - traefik.http.services.ozwd.loadbalancer.server.port=1983
 
   node-red:
     image: nodered/node-red:latest
@@ -152,7 +96,7 @@ services:
       - traefik.http.routers.adguard.entrypoints=https
       - traefik.http.routers.adguard.rule=Host(`adguard.akj.io`)
       - traefik.http.routers.adguard.tls.certresolver=http
-      - traefik.http.routers.adguard.middlewares=whitelist
+#      - traefik.http.routers.adguard.middlewares=whitelist
       - traefik.http.services.adguard.loadbalancer.server.port=80
 
   wireguard:
@@ -184,9 +128,8 @@ services:
   cloudflare-ddns:
     image: oznu/cloudflare-ddns:armhf # change 'latest' to 'armhf' or 'aarch64' if running on an arm device
     restart: always
-    networks:
-      - proxy
     environment:
+      - EMAIL=${CLOUDFLARE_EMAIL}
       - API_KEY=${CLOUDFLARE_APIKEY}
       - ZONE=akj.io
       - SUBDOMAIN=home
