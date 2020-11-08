@@ -37,7 +37,7 @@ services:
       - traefik.http.routers.redirect.middlewares=redirect
       # Enable Dashboard
       - traefik.http.routers.traefik.entrypoints=https
-      - traefik.http.routers.traefik.rule=Host(`traefik.akj.io`)
+      - traefik.http.routers.traefik.rule=Host(`traefik.akj.io`) || (Host(`raspberrypi`) && Path(`/traefik`))
       - traefik.http.routers.traefik.tls.certresolver=http
       - traefik.http.routers.traefik.middlewares=whitelist
       - traefik.http.routers.traefik.service=api@internal
@@ -66,7 +66,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.node-red.entrypoints=https
-      - traefik.http.routers.node-red.rule=Host(`nodered.akj.io`)
+      - traefik.http.routers.node-red.rule=Host(`nodered.akj.io`)  || (Host(`raspberrypi`) && Path(`/nodered`))
       - traefik.http.routers.node-red.tls.certresolver=http
       - traefik.http.routers.node-red.middlewares=whitelist
       - traefik.http.services.node-red.loadbalancer.server.port=1880
@@ -88,7 +88,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.mqtt.entrypoints=https
-      - traefik.http.routers.mqtt.rule=Host(`mqtt.akj.io`)
+      - traefik.http.routers.mqtt.rule=Host(`mqtt.akj.io`) || (Host(`raspberrypi`) && Path(`/mqtt`))
       - traefik.http.routers.mqtt.tls.certresolver=http
       - traefik.http.routers.mqtt.middlewares=whitelist
       - traefik.http.services.mqtt.loadbalancer.server.port=1883
@@ -142,7 +142,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.adguard.entrypoints=https
-      - traefik.http.routers.adguard.rule=Host(`adguard.akj.io`)
+      - traefik.http.routers.adguard.rule=Host(`adguard.akj.io`) || (Host(`raspberrypi`) && Path(`/adguard`))
       - traefik.http.routers.adguard.tls.certresolver=http
       - traefik.http.routers.adguard.middlewares=whitelist
       - traefik.http.services.adguard.loadbalancer.server.port=3000
