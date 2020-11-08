@@ -30,7 +30,7 @@ services:
       - traefik.enable=true
       # Global Middlewares
       - traefik.http.middlewares.redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24,89.23.232.16 # Only allow local connections 89.23.232.16
+      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24,89.23.232.0/24 # Only allow local connections 89.23.232.16
       # Redirect HTTP to HTTPS
       - traefik.http.routers.redirect.entrypoints=http
       - traefik.http.routers.redirect.rule=HostRegexp(`{any:.*}`)
