@@ -78,35 +78,28 @@ services:
       - traefik.http.services.mqtt.loadbalancer.server.port=1883
       - traefik.http.services.mqtt.loadbalancer.server.port=9001
 
-  # OpenZWave (ozwdaemon)
-  ozwd:
-    image: openzwave/ozwdaemon:latest
-    container_name: "ozwd"
+  zwavejs2mqtt:
+    container_name: zwavejs2mqtt
+    image: zwavejs/zwavejs2mqtt:latest
+    restart: unless-stopped 
+    tty: true
+    stop_signal: SIGINT
     networks:
       - proxy
-    security_opt:
-      - seccomp:unconfined
     devices:
       # Z-Wave Stick (ttyACM0)
       - /dev/zwave:/dev/zwave 
+      # - '/dev/ttyACM0:/dev/ttyACM0'
     volumes:
-      - ${VOLUME_PATH}/ozw:/opt/ozw/config
+      - ${VOLUME_PATH}/store:/usr/src/app/store
     ports:
-      - "1983:1983"
+      - '8091:8091'
     environment:
       MQTT_SERVER: "mosquitto" # Docker Hostname
       MQTT_USERNAME: ""
       MQTT_PASSWORD: ""
       USB_PATH: "/dev/zwave"
       OZW_NETWORK_KEY: ${ZWAVE_NETWORKKEY}
-    restart: unless-stopped 
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.ozwd.entrypoints=https
-      - traefik.http.routers.ozwd.rule=Host(`home.akj.io`)
-      - traefik.http.routers.ozwd.tls.certresolver=http
-      - traefik.http.routers.ozwd.middlewares=whitelist
-      - traefik.http.services.ozwd.loadbalancer.server.port=1983
 
   node-red:
     container_name: nodered
@@ -125,40 +118,10 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.node-red.entrypoints=https
-      - traefik.http.routers.node-red.rule=Host(`nodered.akj.io`) || (Host(`raspberrypi`) && Path(`/nodered`))
+      - traefik.http.routers.node-red.rule=Host(`nodered.akj.io`)
       - traefik.http.routers.node-red.tls.certresolver=http
       - traefik.http.routers.node-red.middlewares=whitelist
       - traefik.http.services.node-red.loadbalancer.server.port=1880
-  
-  # OpenZWave (ozwdaemon)
-  ozwd:
-    image: openzwave/ozwdaemon:latest
-    container_name: "ozwd"
-    networks:
-      - proxy
-    security_opt:
-      - seccomp:unconfined
-    devices:
-      # Z-Wave Stick (ttyACM0)
-      - /dev/zwave:/dev/zwave 
-    volumes:
-      - ${VOLUME_PATH}/ozw:/opt/ozw/config
-    ports:
-      - "1983:1983"
-    environment:
-      MQTT_SERVER: "mosquitto" # Docker Hostname
-      MQTT_USERNAME: ""
-      MQTT_PASSWORD: ""
-      USB_PATH: "/dev/zwave"
-      OZW_NETWORK_KEY: ${ZWAVE_NETWORKKEY}
-    restart: unless-stopped 
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.ozwd.entrypoints=https
-      - traefik.http.routers.ozwd.rule=Host(`home.akj.io`)
-      - traefik.http.routers.ozwd.tls.certresolver=http
-      - traefik.http.routers.ozwd.middlewares=whitelist
-      - traefik.http.services.ozwd.loadbalancer.server.port=1983
 
   adguard-home:
     image: adguard/adguardhome:armhf-latest
@@ -210,6 +173,7 @@ services:
       - net.ipv4.conf.all.src_valid_mark=1
     ports:
       - 51820:51820/udp
+      
   # Make sure the IP is correct, it's dynamic at home for me.
   cloudflare-ddns:
     container_name: ddns
