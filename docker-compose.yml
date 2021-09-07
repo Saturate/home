@@ -7,30 +7,33 @@
 version: '3.7'
 
 services:
-
-  # Reverse Proxy
   traefik:
+    container_name: traefik
     image: traefik:latest
     restart: always
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${VOLUME_PATH}/traefik/traefik.yml:/traefik.yml
-      - ${VOLUME_PATH}/traefik/acme.json:/acme.json
-      - ${VOLUME_PATH}/traefik/config.yml:/config.yml
     networks:
       - proxy
-    ports: # We want træfik to handle all of the HTTP and HTTPS stuff, it's a reverse proxy after all.
+    extra_hosts:
+      - host.docker.internal:172.17.0.1
+    ports:
       - 80:80
       - 443:443
-    environment:
-      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL} # These are used for Let's Encrypt
-      - CLOUDFLARE_API_KEY=${CLOUDFLARE_APIKEY}
+    command:
+      - "--log.level=DEBUG"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
     labels:
       - traefik.enable=true
       # Global Middlewares
       - traefik.http.middlewares.redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24,89.23.232.0/24 # Only allow local connections 89.23.232.16
+      - traefik.http.middlewares.whitelist.ipwhitelist.sourcerange=10.0.1.0/24,89.23.232.0/24
       # Redirect HTTP to HTTPS
       - traefik.http.routers.redirect.entrypoints=http
       - traefik.http.routers.redirect.rule=HostRegexp(`{any:.*}`)
@@ -38,22 +41,24 @@ services:
       # Enable Dashboard
       - traefik.http.routers.traefik.entrypoints=https
       - traefik.http.routers.traefik.rule=Host(`traefik.akj.io`)
-      - traefik.http.routers.traefik.tls.certresolver=http
+      - traefik.http.routers.traefik.tls.certresolver=le
       - traefik.http.routers.traefik.middlewares=whitelist
       - traefik.http.routers.traefik.service=api@internal
 
   home-assistant:
+    container_name: home-assistant
     image: homeassistant/raspberrypi4-homeassistant:stable
     restart: always
     volumes:
       - ${VOLUME_PATH}/home-assistant:/config
       - /etc/localtime:/etc/localtime:ro
-    network_mode: host # We need some træfik stuff for this to work properly
+    cap_add:
+      - NET_ADMIN
+      - NET_BIND_SERVICE
+      - SYS_ADMIN
+    network_mode: "host"
     environment:
-      - TZ=Europe/Copenhagen
-    # devices:
-      # Z-Wave Stick (ttyACM0)
-      # - /dev/zwave:/dev/zwave 
+      - TZ=${TZ}
       
   #MQTT Broker
   mqtt:
@@ -73,7 +78,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.mqtt.entrypoints=https
       - traefik.http.routers.mqtt.rule=Host(`mqtt.akj.io`)
-      - traefik.http.routers.mqtt.tls.certresolver=http
+      - traefik.http.routers.mqtt.tls.certresolver=le
       - traefik.http.routers.mqtt.middlewares=whitelist
       - traefik.http.services.mqtt.loadbalancer.server.port=1883
       - traefik.http.services.mqtt.loadbalancer.server.port=9001
@@ -104,8 +109,8 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.zwavejs.entrypoints=https
-      - traefik.http.routers.zwavejsrule=Host(`zwavejs.akj.io`)
-      - traefik.http.routers.zwavejs.tls.certresolver=http
+      - traefik.http.routers.zwavejsrule=Host(`zwavejs.${DOMAIN}`)
+      - traefik.http.routers.zwavejs.tls.certresolver=le
       - traefik.http.routers.zwavejs.middlewares=whitelist
       - traefik.http.services.zwavejs.loadbalancer.server.port=8091
 
@@ -119,19 +124,20 @@ services:
     networks:
       - proxy
     environment:
-      - TZ=Europe/Copenhagen
+      - TZ=${TZ}
     dns:      
-     - "10.0.1.14"
-     - "1.1.1.1"
+     - "10.0.1.14" # Adguard DNS, should be ip of your IP.
+     - "1.1.1.1" # Cloudflare DNS fallback
     labels:
       - traefik.enable=true
       - traefik.http.routers.node-red.entrypoints=https
-      - traefik.http.routers.node-red.rule=Host(`nodered.akj.io`)
-      - traefik.http.routers.node-red.tls.certresolver=http
+      - traefik.http.routers.node-red.rule=Host(`nodered.${DOMAIN}`)
+      - traefik.http.routers.node-red.tls.certresolver=le
       - traefik.http.routers.node-red.middlewares=whitelist
       - traefik.http.services.node-red.loadbalancer.server.port=1880
 
   adguard-home:
+    container_name: adguard
     image: adguard/adguardhome:armhf-latest
     restart: unless-stopped
     volumes:
@@ -147,19 +153,19 @@ services:
       - "67:67"
       - "68:68"
     dns:
-      - 127.0.0.1
-      - 1.1.1.1
+      - 127.0.0.1 # Adguard DNS
+      - 1.1.1.1 # # Cloudflare DNS fallback
     labels:
       - traefik.enable=true
       - traefik.http.routers.adguard.entrypoints=https
-      - traefik.http.routers.adguard.rule=Host(`adguard.akj.io`)
-      - traefik.http.routers.adguard.tls.certresolver=http
+      - traefik.http.routers.adguard.rule=Host(`adguard.${DOMAIN}`)
+      - traefik.http.routers.adguard.tls.certresolver=le
       - traefik.http.routers.adguard.middlewares=whitelist
       - traefik.http.services.adguard.loadbalancer.server.port=80
 
   wireguard:
-    image: ghcr.io/linuxserver/wireguard
     container_name: wireguard
+    image: ghcr.io/linuxserver/wireguard
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
@@ -194,15 +200,16 @@ services:
       - ZONE=akj.io
       - SUBDOMAIN=home
       - PROXIED=false
-
+  
+  # A container that exposes an API to show its IP address
   whoami:
-    # A container that exposes an API to show its IP address
+    container_name: whoami
     image: containous/whoami
     networks:
       - proxy
     labels:
       - traefik.enable=true
-      - traefik.http.routers.whoami.rule=Host(`whoami.akj.io`)
+      - traefik.http.routers.whoami.rule=Host(`whoami.${DOMAIN}`)
 
 networks:
   proxy: # Used for Reverse proxy
