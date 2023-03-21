@@ -40,7 +40,7 @@ services:
       - traefik.http.routers.redirect.middlewares=redirect
       # Enable Dashboard
       - traefik.http.routers.traefik.entrypoints=https
-      - traefik.http.routers.traefik.rule=Host(`traefik.akj.io`)
+      - traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)
       - traefik.http.routers.traefik.tls.certresolver=le
       - traefik.http.routers.traefik.middlewares=whitelist
       - traefik.http.routers.traefik.service=api@internal
@@ -77,7 +77,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.mqtt.entrypoints=https
-      - traefik.http.routers.mqtt.rule=Host(`mqtt.akj.io`)
+      - traefik.http.routers.mqtt.rule=Host(`mqtt.${DOMAIN}`)
       - traefik.http.routers.mqtt.tls.certresolver=le
       - traefik.http.routers.mqtt.middlewares=whitelist
       - traefik.http.services.mqtt.loadbalancer.server.port=1883
