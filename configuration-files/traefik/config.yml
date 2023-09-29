@@ -1,0 +1,17 @@
+http:
+    routers:
+      home-assistant:
+        entrypoints: https
+        rule: Host(`home.akj.io`)
+        service: home-assistant
+        tls:
+          certResolver: http
+    services:
+      home-assistant:
+        loadBalancer:
+          passHostHeader: true
+          sticky:
+           cookie: {}
+          servers:
+           - url: http://172.17.0.1:8123
+  
