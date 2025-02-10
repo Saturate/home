@@ -1,11 +1,12 @@
-# Home 
+# Home
+
 Smart Home Setup. Used on Rasberry Pi 4, 4GB.
 
 - Træfik
 - Home Assistant
 - AdGuard Home
-- WireGuard
 - Node RED
+- zigbee2mqtt
 
 ## Setup
 
@@ -19,6 +20,7 @@ Generate NETWORK KEY:
 `cat /dev/urandom | tr -dc '0-9A-F' | fold -w 32 | head -n 1 | sed -e 's/\(..\)/0x\1, /g' -e 's/, $//'`
 
 ## hs config for proxy
+
 You might need to add this to the configuration.yml
 
 ```
