@@ -32,4 +32,4 @@ http:
 
 ## Setup MQTT
 
-# https://www.home-assistant.io/docs/mqtt/broker
+- https://www.home-assistant.io/docs/mqtt/broker
