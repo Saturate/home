@@ -4,8 +4,6 @@
 # https://docs.docker.com/compose/environment-variables/
 #
 # You need to add them all or this wont work.
-version: "3.7"
-
 services:
   traefik:
     container_name: traefik
