@@ -59,6 +59,7 @@ services:
     volumes:
       - ${VOLUME_PATH}/home-assistant:/config
       - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
     cap_add:
       - NET_ADMIN
       - NET_BIND_SERVICE
