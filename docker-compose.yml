@@ -67,6 +67,13 @@ services:
     network_mode: "host"
     environment:
       - TZ=${TZ}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.home-assistant.loadbalancer.server.port=8123"
+      - "traefik.http.routers.home-assistant.rule=Host(`home.${DOMAIN}`)"
+      - "traefik.http.routers.home-assistant.entrypoints=https"
+      - "traefik.http.routers.home-assistant.tls=true"
+      - "traefik.http.routers.home-assistant.tls.certresolver=le"
 
   #MQTT Broker
   mqtt:
