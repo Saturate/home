@@ -202,6 +202,24 @@ services:
       - traefik.http.routers.adguard.middlewares=whitelist
       - traefik.http.services.adguard.loadbalancer.server.port=80
 
+  # python-matter-server
+  matter-server:
+    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    container_name: matter-server
+    restart: unless-stopped
+    # Required for mDNS to work correctly
+    network_mode: host
+    security_opt:
+      # Needed for Bluetooth via dbus
+      - apparmor:unconfined
+    volumes:
+      # Create an .env file that sets the USERDIR environment variable.
+      - ${USERDIR:-$HOME}/docker/matter-server/data:/data/
+      # Required for Bluetooth via D-Bus
+      - /run/dbus:/run/dbus:ro
+    # If you adjust command line, make sure to pass the default CMD arguments too:
+    #command: --storage-path /data --paa-root-cert-dir /data/credentials --bluetooth-adapter 0
+
   # A container that exposes an API to show its IP address
   whoami:
     container_name: whoami
