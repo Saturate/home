@@ -1,6 +1,12 @@
 # Home
 
-Smart Home Setup. Used on Rasberry Pi 4, 4GB.
+Smarthome Setup.
+
+## Hardware
+ - Rasberry Pi 4, 4GB
+ - Sonoff ZigBee Gateway ZigBee 3.0 USB Dongle Plus-E
+
+## Software
 
 - Træfik
 - Home Assistant
