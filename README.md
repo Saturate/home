@@ -13,6 +13,7 @@ Smarthome Setup.
 - AdGuard Home
 - Node RED
 - zigbee2mqtt
+- zwavejs2mqtt
 
 ## Setup
 
