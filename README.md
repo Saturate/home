@@ -1,6 +1,6 @@
 # Smarthome
 
-Smarthome Setup with Docker.
+Smarthome Setup with Docker. With internal services and external services, configured in Træfik. HTTPS Certs via Træfik and Cloudflare.
 
 ## Hardware
 
