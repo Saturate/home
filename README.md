@@ -13,7 +13,7 @@ Smarthome Setup with Docker. With internal services and external services, confi
 - Home Assistant
 - AdGuard Home
 - Node RED
-- zigbee2mqtt
+- [zigbee2mqtt](https://www.zigbee2mqtt.io/)
 - zwavejs2mqtt
 
 ## Setup
