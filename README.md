@@ -1,8 +1,9 @@
-# Home
+# Smarthome
 
-Smarthome Setup.
+Smarthome Setup with Docker.
 
 ## Hardware
+
  - Rasberry Pi 4, 4GB
  - Sonoff ZigBee Gateway ZigBee 3.0 USB Dongle Plus-E
 
