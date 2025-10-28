@@ -180,7 +180,7 @@ services:
     image: adguard/adguardhome:armhf-latest
     restart: unless-stopped
     volumes:
-      - ${VOLUME_PATH}adguard/work:/opt/adguardhome/work
+      - ${VOLUME_PATH}/adguard/work:/opt/adguardhome/work
       - ${VOLUME_PATH}/adguard/conf:/opt/adguardhome/conf
     networks:
       - proxy
